@@ -3,7 +3,7 @@
 An executive, high-precision talent intelligence platform that parses resumes, extracts domain skills, and screens candidates against Job Descriptions using a **Tri-Tier Hybrid Matching Engine** (Taxonomy Normalization + TF-IDF Vector Cosine Similarity + LLM Justification & Diagnostic Analysis).
 
 ### 🚀 Live Render Deployment Link
-**Live Web Application**: [https://smart-resume-screener.onrender.com](https://smart-resume-screener.onrender.com)
+**Live Web Application**: [https://smart-resume-screener-26vp.onrender.com/](https://smart-resume-screener-26vp.onrender.com/)
 
 **GitHub Repository**: [https://github.com/ksa-raman-2005/Resume_Screener](https://github.com/ksa-raman-2005/Resume_Screener)
 
