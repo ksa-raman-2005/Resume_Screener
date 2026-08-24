@@ -1,71 +1,62 @@
-# Smart Resume Screener
+# Smart Resume Screener 🚀
 
-An executive, high-precision talent intelligence platform that parses resumes, extracts domain skills, and screens candidates against Job Descriptions using a **Tri-Tier Hybrid Matching Engine** (Taxonomy Normalization + TF-IDF Vector Cosine Similarity + LLM Justification & Diagnostic Analysis).
+[![Live Demo](https://img.shields.io/badge/Render-Live_App-brightgreen?style=for-the-badge&logo=render)](https://smart-resume-screener-26vp.onrender.com/)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue?style=for-the-badge&logo=github)](https://github.com/ksa-raman-2005/Resume_Screener)
 
-### 🚀 Live Render Deployment Link
-**Live Web Application**: [https://smart-resume-screener-26vp.onrender.com/](https://smart-resume-screener-26vp.onrender.com/)
-
-**GitHub Repository**: [https://github.com/ksa-raman-2005/Resume_Screener](https://github.com/ksa-raman-2005/Resume_Screener)
+An executive-grade talent intelligence platform designed to parse candidate resumes, extract normalized domain skills, and evaluate candidate alignment against Job Descriptions using a **Tri-Tier Hybrid Matching Engine**.
 
 ---
 
-## Render Free Tier Auto-Deploy Setup (1-Minute Guide)
+## 🔗 Live Application Links
 
-The repository includes a ready-to-use [`render.yaml`](render.yaml) blueprint file for zero-configuration free tier hosting.
-
-### Quick Deployment Steps:
-
-1. Go to [Render Dashboard](https://dashboard.render.com).
-2. Click **New +** -> **Blueprint**.
-3. Select & Connect your GitHub Repository: `https://github.com/ksa-raman-2005/Resume_Screener`.
-4. Render will read `render.yaml` and deploy automatically:
-   - **Environment**: Python 3.11
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-5. Your app will be live at: `https://smart-resume-screener.onrender.com` (or your assigned `.onrender.com` URL).
+* **Live Deployment (Render):** [https://smart-resume-screener-26vp.onrender.com/](https://smart-resume-screener-26vp.onrender.com/)
+* **GitHub Repository:** [https://github.com/ksa-raman-2005/Resume_Screener](https://github.com/ksa-raman-2005/Resume_Screener)
+* **Local Server URL:** `http://localhost:8000`
 
 ---
 
-## Features
+## 🎯 Key Features & Core Capabilities
 
-- **Multi-Format Upload**: Upload Job Descriptions & Candidate Resumes in PDF format, Word (`.docx`), or Plain Text.
-- **Distinct Candidate Profiles**: Evaluates each candidate file separately (no merging), extracting contact info, skills, and experience.
-- **Tri-Tier Hybrid Screener**:
-  - **Tier 1 (Taxonomy & Alias Normalizer)**: Standardizes aliases (`React.js` $\leftrightarrow$ `React`, `Postgres` $\leftrightarrow$ `PostgreSQL`, `K8s` $\leftrightarrow$ `Kubernetes`).
-  - **Tier 2 (TF-IDF Vector Cosine Similarity)**: Measures semantic text overlap between candidate projects and JD responsibilities.
-  - **Tier 3 (Structured LLM Diagnostic)**: Generates composite scores, verified strengths vs missing skill gaps, and tailored technical interview questions.
-- **Executive Professional UI**: Clean Light & Dark theme switcher, zero emojis, inline SVG icons, shortlist ranking table, and candidate diagnostic modal drawer.
-
----
-
-## Database Architecture (`SQLite 3`)
-
-Uses an embedded serverless **SQLite 3** database (`screener.db`) with Write-Ahead Logging (WAL) enabled:
-
-- **`jobs`**: Stores job description text and extracted skills.
-- **`candidates`**: Stores candidate profiles, contact info, parsed skills, projects, and education.
-- **`evaluations`**: Stores match scores, skill/semantic matrices, strengths, gaps, hiring justifications, and generated interview question prompts.
+* **Multi-Format Document Parsing:** Native drag-and-drop extraction for `.pdf`, `.docx`, `.doc`, and `.txt` files without requiring text copy-pasting.
+* **Distinct Candidate Profiles:** Evaluates each resume independently (zero profile merging), displaying individual match percentages, extracted skills, and custom insights.
+* **Tri-Tier Hybrid Screener Engine:**
+  * **Tier 1 (Taxonomy & Alias Normalizer):** Standardizes technical aliases across stacks (e.g., `React.js` -> `React`, `Postgres` -> `PostgreSQL`, `K8s` -> `Kubernetes`).
+  * **Tier 2 (TF-IDF Vector Cosine Similarity):** Quantifies statistical text overlap between project experience and job responsibilities.
+  * **Tier 3 (Structured LLM Diagnostic):** Generates qualitative alignment justifications, identifies critical skill gaps, and formulates candidate-specific technical interview questions.
+* **Executive Dashboard UI:** Clean interface with drag-and-drop batch file uploads, real-time shortlist rankings, candidate diagnostic drawers, and dynamic Light/Dark mode switching.
 
 ---
 
-## Clean Repository Standard
+## 🏗 System Architecture
 
-The `.gitignore` strictly excludes temporary and sensitive files:
-- `node_modules/`, `venv/`, `.venv/`
-- `.env` or configuration secrets
-- Build artifacts (`dist/`, `.next/`, `out/`, `build/`)
-- Local SQLite runtime database (`screener.db`)
-- Editor settings (`.vscode/`, `.idea/`, `.DS_Store`)
+The project pairs a high-performance Python backend with an embedded serverless database:
 
----
-
-## Local Development Setup
-
-```bash
-git clone https://github.com/ksa-raman-2005/Resume_Screener.git
-cd Resume_Screener
-
-pip install -r requirements.txt
-python3 -m uvicorn app.main:app --reload --port 8000
-```
-Access locally at `http://localhost:8000`.
+```text
+               +----------------------------------+
+               |   Multi-Format File Ingestion    |
+               |     (PDF, DOCX, DOC, TXT)        |
+               +----------------------------------+
+                                |
+                                v
+               +----------------------------------+
+               |  Tier 1: Taxonomy Normalizer     |
+               |  (Alias Mapping & Standardizing) |
+               +----------------------------------+
+                                |
+                                v
+               +----------------------------------+
+               |  Tier 2: TF-IDF Cosine Vector     |
+               |  (Statistical Skill Match Ratio) |
+               +----------------------------------+
+                                |
+                                v
+               +----------------------------------+
+               |  Tier 3: LLM Diagnostic Engine   |
+               |  (Gaps, Strengths & Questions)   |
+               +----------------------------------+
+                                |
+                                v
+               +----------------------------------+
+               |      SQLite 3 Database (WAL)     |
+               | (Jobs, Candidates, Evaluations)  |
+               +----------------------------------+
