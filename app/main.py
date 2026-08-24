@@ -3,7 +3,6 @@ from typing import List, Optional
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Header
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
-from pydantic import BaseModel
 
 from app.database import (
     init_db, save_job, save_candidate, save_evaluation, 
@@ -16,11 +15,11 @@ from app.llm import evaluate_candidate_with_llm
 
 app = FastAPI(
     title="Smart Resume Screener",
-    description="Intelligent resume screening & candidate matching engine powered by SQLite and Hybrid Semantic Matching.",
-    version="1.0.0"
+    description="Automated resume screening & candidate matching platform.",
+    version="1.1.0"
 )
 
-# Mount static directory for frontend web UI
+# Mount static directory for frontend UI
 static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
 if os.path.exists(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
@@ -48,8 +47,8 @@ async def screen_resumes(
     resume_files: Optional[List[UploadFile]] = File(None),
     x_api_key: Optional[str] = Header(None)
 ):
-    """Processes Job Description + multiple candidate resumes (PDF or Text), extracts structured data, and runs semantic match evaluation."""
-    # 1. Resolve Job Description Text
+    """Processes Job Description + distinct candidate resumes (PDF or Text), extracts structured data, and computes semantic match evaluations."""
+    # 1. Resolve Job Description
     final_jd_text = ""
     if jd_file and jd_file.filename:
         content = await jd_file.read()
@@ -61,21 +60,14 @@ async def screen_resumes(
         final_jd_text = jd_text
         
     if not final_jd_text.strip():
-        raise HTTPException(status_code=400, detail="Job Description input is required (either text or PDF file).")
+        raise HTTPException(status_code=400, detail="Job Description input is required (PDF file upload or text).")
         
     parsed_job = parse_job_description(final_jd_text)
     job_id = save_job(parsed_job["title"], parsed_job["company"], final_jd_text, parsed_job)
     
-    # 2. Extract Candidate Resumes
-    candidate_sources = [] # list of raw_text strings
+    # 2. Collect Candidate Sources as tuple: (raw_text, filename)
+    candidates_to_process = []
     
-    # Process text inputs if provided
-    if resume_texts:
-        for txt in resume_texts:
-            if txt and txt.strip():
-                candidate_sources.append(txt.strip())
-                
-    # Process file uploads if provided
     if resume_files:
         for file_item in resume_files:
             if file_item and file_item.filename:
@@ -85,16 +77,21 @@ async def screen_resumes(
                 else:
                     extracted = content.decode("utf-8", errors="ignore")
                 if extracted.strip():
-                    candidate_sources.append(extracted.strip())
+                    candidates_to_process.append((extracted.strip(), file_item.filename))
                     
-    if not candidate_sources:
-        raise HTTPException(status_code=400, detail="At least one valid resume (PDF file or text) must be provided.")
+    if resume_texts:
+        for txt in resume_texts:
+            if txt and txt.strip():
+                candidates_to_process.append((txt.strip(), "Pasted Resume Text"))
+                
+    if not candidates_to_process:
+        raise HTTPException(status_code=400, detail="At least one candidate resume (PDF file upload or text) must be provided.")
         
-    # 3. Process & Screen Candidates
+    # 3. Process each Candidate individually
     evaluations_result = []
     
-    for raw_resume_text in candidate_sources:
-        parsed_cand = parse_resume(raw_resume_text)
+    for raw_resume_text, fname in candidates_to_process:
+        parsed_cand = parse_resume(raw_resume_text, filename=fname)
         cand_id = save_candidate(
             parsed_cand["name"],
             parsed_cand["email"],
@@ -106,7 +103,6 @@ async def screen_resumes(
             raw_resume_text
         )
         
-        # Run hybrid evaluation
         eval_output = evaluate_candidate_with_llm(parsed_cand, parsed_job, api_key=x_api_key)
         
         eval_id = save_evaluation(
@@ -126,6 +122,7 @@ async def screen_resumes(
             "evaluation_id": eval_id,
             "candidate_id": cand_id,
             "candidate_name": parsed_cand["name"],
+            "filename": fname,
             "candidate_email": parsed_cand["email"],
             "candidate_phone": parsed_cand["phone"],
             "candidate_skills": parsed_cand["skills"],
@@ -153,11 +150,9 @@ async def screen_resumes(
 
 @app.get("/api/candidates")
 def list_candidates():
-    """Retrieve all historical candidates stored in SQLite database."""
     return {"candidates": get_all_candidates()}
 
 @app.get("/api/job/{job_id}/evaluations")
 def get_job_evaluations(job_id: str):
-    """Retrieve evaluations for a specific job session."""
     evals = get_evaluations_for_job(job_id)
     return {"job_id": job_id, "evaluations": evals}

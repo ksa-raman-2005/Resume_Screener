@@ -26,7 +26,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Drag & Drop File Handling
+  // Tab Switchers (Upload File vs Paste Text)
+  document.querySelectorAll('.tab-switcher').forEach(switcher => {
+    switcher.addEventListener('click', (e) => {
+      if (!e.target.classList.contains('tab-btn')) return;
+      const targetId = e.target.getAttribute('data-target');
+      
+      const parentCol = switcher.closest('.form-column');
+      parentCol.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      e.target.classList.add('active');
+
+      parentCol.querySelectorAll('.tab-pane').forEach(pane => {
+        if (pane.id === `${targetId}-pane`) {
+          pane.classList.remove('hidden');
+        } else {
+          pane.classList.add('hidden');
+        }
+      });
+    });
+  });
+
+  // Dropzone File Handlers
   const jdDropzone = document.getElementById('jdDropzone');
   const jdFileInput = document.getElementById('jdFileInput');
   const jdFileSelected = document.getElementById('jdFileSelected');
@@ -35,7 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const resumeFileInput = document.getElementById('resumeFileInput');
   const resumeFilesSelectedList = document.getElementById('resumeFilesSelectedList');
 
-  // JD File Input Handler
   jdFileInput.addEventListener('change', () => {
     if (jdFileInput.files.length > 0) {
       jdFileSelected.textContent = jdFileInput.files[0].name;
@@ -51,9 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Resume Files Input Handler
   resumeFileInput.addEventListener('change', updateResumeFileList);
-
   setupDropzone(resumeDropzone, resumeFileInput, (files) => {
     resumeFileInput.files = files;
     updateResumeFileList();
@@ -107,46 +124,40 @@ document.addEventListener('DOMContentLoaded', () => {
   screeningForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    // Determine active tabs
+    const jdTabActive = document.querySelector('[data-target="jd-file"]').classList.contains('active');
+    const resumeTabActive = document.querySelector('[data-target="resume-file"]').classList.contains('active');
+
     const jdText = document.getElementById('jdTextArea').value.trim();
     const resumeText = document.getElementById('resumeTextArea').value.trim();
 
-    if (!jdText && (!jdFileInput.files || jdFileInput.files.length === 0)) {
-      alert("Please provide a Job Description (file upload or text).");
-      return;
-    }
-
-    if (!resumeText && (!resumeFileInput.files || resumeFileInput.files.length === 0)) {
-      alert("Please provide candidate resume(s) (file upload or text).");
-      return;
-    }
-
     const formData = new FormData();
-    if (jdFileInput.files.length > 0) {
+
+    if (jdTabActive && jdFileInput.files.length > 0) {
       formData.append('jd_file', jdFileInput.files[0]);
     } else if (jdText) {
       formData.append('jd_text', jdText);
+    } else {
+      alert("Please upload a Job Description file or paste the JD text.");
+      return;
     }
 
-    if (resumeFileInput.files.length > 0) {
+    if (!resumeTabActive && resumeText) {
+      formData.append('resume_texts', resumeText);
+    } else if (resumeFileInput.files.length > 0) {
       Array.from(resumeFileInput.files).forEach(file => {
         formData.append('resume_files', file);
       });
-    }
-
-    if (resumeText) {
-      const splits = resumeText.split(/---|\n\n\n+/);
-      splits.forEach(chunk => {
-        if (chunk.trim()) {
-          formData.append('resume_texts', chunk.trim());
-        }
-      });
+    } else {
+      alert("Please upload candidate PDF resume(s) or paste candidate text.");
+      return;
     }
 
     // Submit state
     submitBtn.disabled = true;
     submitBtn.innerHTML = `
-      <svg class="spinner" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-      Analyzing Resumes...
+      <svg class="spinner" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+      Screening Resumes...
     `;
 
     try {
@@ -164,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
       currentEvaluations = data.candidates;
       
       jobTitleHeader.textContent = `Shortlisted Candidates for: ${data.job_title}`;
-      evaluationMetaHeader.textContent = `Evaluated ${data.total_evaluated} candidate(s) against ${data.required_skills.length} required skill competencies.`;
+      evaluationMetaHeader.textContent = `Evaluated ${data.total_evaluated} distinct candidate(s) against required competencies.`;
       
       renderCandidates(currentEvaluations);
       resultsSection.classList.remove('hidden');
@@ -175,8 +186,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } finally {
       submitBtn.disabled = false;
       submitBtn.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        Screen & Rank Candidates
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Screen Resumes
       `;
     }
   });
@@ -217,10 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <span class="rank-badge">#${idx + 1}</span>
           <span class="cand-name">${escapeHtml(c.candidate_name)}</span>
         </td>
-        <td>
-          <div>${escapeHtml(c.candidate_email || 'No Email')}</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(c.candidate_phone || '')}</div>
-        </td>
+        <td style="font-size:0.8rem; color:var(--text-secondary);">${escapeHtml(c.filename || 'Uploaded Resume')}</td>
         <td>~${c.experience_years} yrs</td>
         <td>${renderSkillsPills(c.candidate_skills)}</td>
         <td><span class="score-pill ${scoreClass}">${c.overall_score}%</span></td>
@@ -235,14 +243,11 @@ document.addEventListener('DOMContentLoaded', () => {
       candidateTableBody.appendChild(tr);
     });
 
-    // Attach modal trigger handlers
     document.querySelectorAll('.view-detail-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const candId = btn.getAttribute('data-id');
         const candidate = currentEvaluations.find(item => item.candidate_id === candId);
-        if (candidate) {
-          openModal(candidate);
-        }
+        if (candidate) openModal(candidate);
       });
     });
   }
@@ -263,7 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function openModal(c) {
     document.getElementById('modalCandidateName').textContent = c.candidate_name;
-    document.getElementById('modalCandidateSub').textContent = `Status: ${c.status} | Contact: ${c.candidate_email || 'N/A'}`;
+    document.getElementById('modalCandidateSub').textContent = `File: ${c.filename || 'Uploaded Resume'} | Status: ${c.status}`;
     
     document.getElementById('modalOverallScore').textContent = `${c.overall_score}%`;
     document.getElementById('modalSkillScore').textContent = `${c.skill_score}%`;
@@ -271,19 +276,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('modalJustificationText').textContent = c.justification;
 
-    // Render Strengths
     const strContainer = document.getElementById('modalStrengthsContainer');
     strContainer.innerHTML = c.strengths.length > 0 
       ? c.strengths.map(s => `<span class="pill pill-strength">${escapeHtml(s)}</span>`).join('')
       : '<span style="font-size:0.85rem; color:var(--text-muted);">No key strengths identified</span>';
 
-    // Render Gaps
     const gapsContainer = document.getElementById('modalGapsContainer');
     gapsContainer.innerHTML = c.gaps.length > 0 
       ? c.gaps.map(g => `<span class="pill pill-gap">${escapeHtml(g)}</span>`).join('')
       : '<span style="font-size:0.85rem; color:var(--text-muted);">No critical skill gaps found</span>';
 
-    // Render Interview Questions
     const qList = document.getElementById('modalQuestionsList');
     qList.innerHTML = c.interview_questions.length > 0 
       ? c.interview_questions.map(q => `<li>${escapeHtml(q)}</li>`).join('')
