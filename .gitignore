@@ -1,0 +1,56 @@
+# Environment & sensitive configuration
+.env
+.env.*
+*.env
+
+# Dependencies & Environments
+venv/
+.venv/
+env/
+ENV/
+node_modules/
+
+# Database & Storage
+*.db
+*.sqlite
+*.sqlite3
+screener.db
+
+# Python build & cache artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Framework / Build Output
+.next/
+out/
+.nuxt/
+.vuepress/
+.cache/
+
+# Editor & OS temporary files
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

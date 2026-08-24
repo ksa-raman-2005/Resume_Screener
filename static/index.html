@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Resume Screener | Executive Talent Screener</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Navigation Header -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <path d="m9 15 2 2 4-4"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">Smart Resume Screener</h1>
+          <p class="brand-subtitle">Precision Semantic Matching & Candidate Shortlisting</p>
+        </div>
+      </div>
+      
+      <div class="header-actions">
+        <div class="db-badge">
+          <span class="status-dot"></span>
+          <span class="db-text">Database: SQLite 3 (screener.db)</span>
+        </div>
+        <button id="themeToggleBtn" class="btn btn-secondary icon-btn" title="Toggle Light/Dark Theme">
+          <svg id="sunIcon" class="icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg id="moonIcon" class="icon hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="main-content">
+      <!-- Input Panel -->
+      <section class="card input-section">
+        <h2 class="section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          1. Upload Position Requirements & Resumes
+        </h2>
+        
+        <form id="screeningForm" class="screening-form">
+          <div class="form-grid">
+            <!-- Job Description Block -->
+            <div class="form-column">
+              <div class="column-header">
+                <label class="form-label">Job Description (JD)</label>
+                <span class="badge badge-neutral">PDF or Plain Text</span>
+              </div>
+              <div class="file-dropzone" id="jdDropzone">
+                <input type="file" id="jdFileInput" accept=".pdf,.txt" class="file-input">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <p class="dropzone-text">Drag & drop JD PDF file here or <span class="link-text">browse</span></p>
+                <span id="jdFileSelected" class="file-name-tag hidden"></span>
+              </div>
+              <div class="divider-text">OR PASTE TEXT</div>
+              <textarea id="jdTextArea" class="form-textarea" placeholder="Paste full job description text here..."></textarea>
+            </div>
+
+            <!-- Candidate Resumes Block -->
+            <div class="form-column">
+              <div class="column-header">
+                <label class="form-label">Candidate Resumes (Group Batch Upload)</label>
+                <span class="badge badge-neutral">Multiple PDFs or Text</span>
+              </div>
+              <div class="file-dropzone" id="resumeDropzone">
+                <input type="file" id="resumeFileInput" accept=".pdf,.txt" multiple class="file-input">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <p class="dropzone-text">Drag & drop multiple Candidate PDF Resumes or <span class="link-text">browse files</span></p>
+                <div id="resumeFilesSelectedList" class="file-list-container"></div>
+              </div>
+              <div class="divider-text">OR PASTE CANDIDATE TEXTS</div>
+              <textarea id="resumeTextArea" class="form-textarea" placeholder="Paste candidate resume text (Separate multiple candidates with '---')"></textarea>
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <button type="submit" id="submitBtn" class="btn btn-primary btn-lg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Screen & Rank Candidates
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Results Panel -->
+      <section id="resultsSection" class="card results-section hidden">
+        <div class="results-header">
+          <div>
+            <h2 class="section-title" id="jobTitleHeader">Shortlisted Candidates</h2>
+            <p class="section-subtitle" id="evaluationMetaHeader">Displaying ranked candidate evaluation breakdown</p>
+          </div>
+          <div class="filter-controls">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="Shortlisted">Shortlisted</button>
+            <button class="filter-btn" data-filter="Under Review">Under Review</button>
+          </div>
+        </div>
+
+        <!-- Candidate Table -->
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Rank & Candidate</th>
+                <th>Contact Info</th>
+                <th>Experience</th>
+                <th>Matched Skills</th>
+                <th>Match Score</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="candidateTableBody">
+              <!-- Rendered via app.js -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- Candidate Detail Modal -->
+    <div id="candidateModal" class="modal-overlay hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div>
+            <h3 id="modalCandidateName" class="modal-title">Candidate Evaluation</h3>
+            <p id="modalCandidateSub" class="modal-subtitle">Detailed breakdown & interview diagnostic</p>
+          </div>
+          <button id="closeModalBtn" class="btn-icon-close">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <!-- Scores Summary Grid -->
+          <div class="score-summary-grid">
+            <div class="score-card">
+              <span class="score-label">Overall Match Score</span>
+              <div class="score-value" id="modalOverallScore">0%</div>
+            </div>
+            <div class="score-card">
+              <span class="score-label">Skill Matrix Match</span>
+              <div class="score-value secondary" id="modalSkillScore">0%</div>
+            </div>
+            <div class="score-card">
+              <span class="score-label">Semantic Cosine Similarity</span>
+              <div class="score-value secondary" id="modalSemanticScore">0%</div>
+            </div>
+          </div>
+
+          <!-- Justification -->
+          <div class="detail-block">
+            <h4 class="block-title">Executive Hiring Justification</h4>
+            <p id="modalJustificationText" class="justification-box"></p>
+          </div>
+
+          <!-- Strengths & Gaps -->
+          <div class="detail-grid">
+            <div class="detail-block">
+              <h4 class="block-title">Verified Key Strengths</h4>
+              <div id="modalStrengthsContainer" class="pill-container"></div>
+            </div>
+            <div class="detail-block">
+              <h4 class="block-title">Identified Skill Gaps / Risks</h4>
+              <div id="modalGapsContainer" class="pill-container"></div>
+            </div>
+          </div>
+
+          <!-- Tailored Interview Questions -->
+          <div class="detail-block">
+            <h4 class="block-title">Tailored Interview Question Prompts</h4>
+            <ul id="modalQuestionsList" class="questions-list"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
